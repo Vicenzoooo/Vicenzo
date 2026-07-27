@@ -5,6 +5,7 @@ local RunService = game:GetService("RunService")
 local CoreGui = game:GetService("CoreGui")
 local LocalPlayer = Players.LocalPlayer
 
+local VALID_KEYS = {"ilyguys"}
 local DISCORD_LINK = "https://discord.gg/DHeCNzTypH"
 local KEY_FILE = "IBdihPHub_SavedKey.txt"
 
@@ -251,14 +252,15 @@ local KeyPage = new("Frame", { Size = UDim2.new(1,0,1,0), BackgroundTransparency
 local LogoMark = new("Frame", { Size = UDim2.new(0,40,0,40), Position = UDim2.new(0,0,0,2), BackgroundColor3 = C.accentGhost, ZIndex = 6, Parent = KeyPage })
 corner(LogoMark, 12); stroke(LogoMark, C.accent, 1)
 label({ Size = UDim2.new(1,0,1,0), Text = "✦", TextColor3 = C.accent, TextSize = 20, Font = Enum.Font.GothamBold, ZIndex = 7, Parent = LogoMark })
-label({ Size = UDim2.new(0,200,0,20), Position = UDim2.new(0,52,0,3), Text = "Vicenzowws", TextColor3 = C.textB, TextSize = 18, Font = Enum.Font.GothamBold, TextXAlignment = Enum.TextXAlignment.Left, ZIndex = 6, Parent = KeyPage })
-label({ Size = UDim2.new(0,200,0,14), Position = UDim2.new(0,52,0,25), Text = "Pang PSG", TextColor3 = C.textS, TextSize = 11, TextXAlignment = Enum.TextXAlignment.Left, ZIndex = 6, Parent = KeyPage })
+label({ Size = UDim2.new(0,200,0,20), Position = UDim2.new(0,52,0,3), Text = "IBdihP Hub", TextColor3 = C.textB, TextSize = 18, Font = Enum.Font.GothamBold, TextXAlignment = Enum.TextXAlignment.Left, ZIndex = 6, Parent = KeyPage })
+label({ Size = UDim2.new(0,200,0,14), Position = UDim2.new(0,52,0,25), Text = "script loader  v3.0", TextColor3 = C.textS, TextSize = 11, TextXAlignment = Enum.TextXAlignment.Left, ZIndex = 6, Parent = KeyPage })
 
 new("Frame", { Size = UDim2.new(1,0,0,1), Position = UDim2.new(0,0,0,54), BackgroundColor3 = C.border, BorderSizePixel = 0, ZIndex = 5, Parent = KeyPage })
 
 label({ Size = UDim2.new(1,0,0,16), Position = UDim2.new(0,0,0,68), Text = "Welcome, " .. LocalPlayer.Name .. " 👋", TextColor3 = C.text, TextSize = 13, TextXAlignment = Enum.TextXAlignment.Left, ZIndex = 5, Parent = KeyPage })
 label({ Size = UDim2.new(1,0,0,14), Position = UDim2.new(0,0,0,87), Text = gameScript and ("✓  " .. gameScript.Name) or "⚠  This game is not supported", TextColor3 = gameScript and C.success or C.warning, TextSize = 11, TextXAlignment = Enum.TextXAlignment.Left, ZIndex = 5, Parent = KeyPage })
 
+-- Input
 -- Buttons
 local BtnRow = new("Frame", { Size = UDim2.new(1,0,0,44), Position = UDim2.new(0,0,1,-44), BackgroundTransparency = 1, ZIndex = 6, Parent = KeyPage })
 local DiscordBtn = makeBtn({ size = UDim2.new(0,108,1,0), pos = UDim2.new(0,0,0,0), col = C.discord, hov = C.discordH, press = C.discordP, text = "💬  Get Key", ts = 12 }, BtnRow)
@@ -360,7 +362,24 @@ end
 local verifying = false
 local function doVerify()
     if verifying then return end
+    local key = trim(KeyInput.Text)
 
+    if key == "" then
+        showStatus("⚠  please enter a key", C.warning)
+        shakeInput(); return
+    end
+
+    verifying = true
+    VerifyLabel.Text = "Verifying..."
+    tween(VerifyBtn, { BackgroundColor3 = C.accentSoft }, 0.15)
+    task.wait(0.6)
+
+    if isKeyValid(key) then
+        saveKey(key)
+        showStatus("✓  Key verified!", C.success)
+        tween(VerifyBtn, { BackgroundColor3 = C.success }, 0.2)
+        tween(inputStroke, { Color = C.success }, 0.2)
+        VerifyLabel.Text = "✓  Verified!"
         task.wait(0.7)
 
         if gameScript then
@@ -371,6 +390,23 @@ local function doVerify()
         else
             transitionTo(KeyPage, UnsupportedPage)
         end
+    else
+        showStatus("✗  Invalid key — join Discord for a free key", C.error)
+        tween(inputStroke, { Color = C.error }, 0.15)
+        shakeInput()
+        task.delay(3.5, function()
+            tween(inputStroke, { Color = C.border }, 0.3)
+            if StatusMsg and StatusMsg.Parent then
+                tween(StatusMsg, { TextTransparency = 1 }, 0.4)
+                task.wait(0.4)
+                if StatusMsg and StatusMsg.Parent then StatusMsg.Text = ""; StatusMsg.TextTransparency = 0 end
+            end
+        end)
+        VerifyLabel.Text = "Verify & Launch  →"
+        tween(VerifyBtn, { BackgroundColor3 = C.accent }, 0.2)
+        verifying = false
+    end
+end
 
 VerifyBtn.MouseButton1Click:Connect(doVerify)
 KeyInput.FocusLost:Connect(function(enter) if enter then doVerify() end end)
