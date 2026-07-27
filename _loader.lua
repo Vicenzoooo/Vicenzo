@@ -5,7 +5,6 @@ local RunService = game:GetService("RunService")
 local CoreGui = game:GetService("CoreGui")
 local LocalPlayer = Players.LocalPlayer
 
-local VALID_KEYS = {"ilyguys"}
 local DISCORD_LINK = "https://discord.gg/DHeCNzTypH"
 local KEY_FILE = "IBdihPHub_SavedKey.txt"
 
@@ -69,18 +68,10 @@ local SCRIPTS = {
 }
 
 -- ═══ HELPERS ═══
-local function trim(s) return s:gsub("^%s+", ""):gsub("%s+$", "") end
 
 local function isKeyValid(key)
-    if not key or key == "" then return false end
-    key = trim(key)
-    for _, k in ipairs(VALID_KEYS) do
-        if key == k then return true end
-    end
-    return false
+    return true
 end
-
-local function saveKey(key) pcall(function() if writefile then writefile(KEY_FILE, key) end end) end
 
 local function loadKey()
     local ok, res = pcall(function()
@@ -100,13 +91,9 @@ local function launch(scriptData)
 end
 
 -- ═══ AUTO-LAUNCH IF KEY SAVED ═══
-local savedKey = loadKey()
 local gameScript = getGameScript()
 
-if isKeyValid(savedKey) and gameScript then
-    launch(gameScript)
-    return
-end
+
 
 -- ═══ COLORS ═══
 local C = {
@@ -246,14 +233,14 @@ end
 -- ══════════════════════════════════════════
 --   KEY PAGE
 -- ══════════════════════════════════════════
-local KeyPage = new("Frame", { Size = UDim2.new(1,0,1,0), BackgroundTransparency = 1, Visible = not isKeyValid(savedKey), ZIndex = 5, Parent = Content })
+local KeyPage = new("Frame", { Size = UDim2.new(1,0,1,0), BackgroundTransparency = 1, Visible = true, ZIndex = 5, Parent = Content })
 
 -- Header
 local LogoMark = new("Frame", { Size = UDim2.new(0,40,0,40), Position = UDim2.new(0,0,0,2), BackgroundColor3 = C.accentGhost, ZIndex = 6, Parent = KeyPage })
 corner(LogoMark, 12); stroke(LogoMark, C.accent, 1)
 label({ Size = UDim2.new(1,0,1,0), Text = "✦", TextColor3 = C.accent, TextSize = 20, Font = Enum.Font.GothamBold, ZIndex = 7, Parent = LogoMark })
-label({ Size = UDim2.new(0,200,0,20), Position = UDim2.new(0,52,0,3), Text = "IBdihP Hub", TextColor3 = C.textB, TextSize = 18, Font = Enum.Font.GothamBold, TextXAlignment = Enum.TextXAlignment.Left, ZIndex = 6, Parent = KeyPage })
-label({ Size = UDim2.new(0,200,0,14), Position = UDim2.new(0,52,0,25), Text = "script loader  v3.0", TextColor3 = C.textS, TextSize = 11, TextXAlignment = Enum.TextXAlignment.Left, ZIndex = 6, Parent = KeyPage })
+label({ Size = UDim2.new(0,200,0,20), Position = UDim2.new(0,52,0,3), Text = "Vicenzo Hub", TextColor3 = C.textB, TextSize = 18, Font = Enum.Font.GothamBold, TextXAlignment = Enum.TextXAlignment.Left, ZIndex = 6, Parent = KeyPage })
+label({ Size = UDim2.new(0,200,0,14), Position = UDim2.new(0,52,0,25), Text = "Pang PSG", TextColor3 = C.textS, TextSize = 11, TextXAlignment = Enum.TextXAlignment.Left, ZIndex = 6, Parent = KeyPage })
 
 new("Frame", { Size = UDim2.new(1,0,0,1), Position = UDim2.new(0,0,0,54), BackgroundColor3 = C.border, BorderSizePixel = 0, ZIndex = 5, Parent = KeyPage })
 
@@ -312,10 +299,7 @@ local LaunchSub   = label({ Size = UDim2.new(1,0,0,16), Position = UDim2.new(0,0
 label({ Size = UDim2.new(1,0,0,14), Position = UDim2.new(0,0,1,-30), Text = "key saved — you won't need to enter it again ✓", TextColor3 = C.success, TextSize = 10, ZIndex = 6, Parent = LaunchPage })
 
 -- Show correct page if key already valid
-if isKeyValid(savedKey) then
-    KeyPage.Visible = false
-    UnsupportedPage.Visible = true
-end
+
 
 -- ══════════════════════════════════════════
 --   BUTTON LOGIC
@@ -362,24 +346,15 @@ end
 local verifying = false
 local function doVerify()
     if verifying then return end
-    local key = trim(KeyInput.Text)
 
-    if key == "" then
-        showStatus("⚠  please enter a key", C.warning)
-        shakeInput(); return
-    end
 
     verifying = true
-    VerifyLabel.Text = "Verifying..."
+    VerifyLabel.Text = "Launching..."
     tween(VerifyBtn, { BackgroundColor3 = C.accentSoft }, 0.15)
     task.wait(0.6)
 
-    if isKeyValid(key) then
-        saveKey(key)
-        showStatus("✓  Key verified!", C.success)
         tween(VerifyBtn, { BackgroundColor3 = C.success }, 0.2)
-        tween(inputStroke, { Color = C.success }, 0.2)
-        VerifyLabel.Text = "✓  Verified!"
+        VerifyLabel.Text = "✓  Launched!"
         task.wait(0.7)
 
         if gameScript then
@@ -389,23 +364,7 @@ local function doVerify()
             closeThenLaunch(gameScript)
         else
             transitionTo(KeyPage, UnsupportedPage)
-        end
-    else
-        showStatus("✗  Invalid key — join Discord for a free key", C.error)
-        tween(inputStroke, { Color = C.error }, 0.15)
-        shakeInput()
-        task.delay(3.5, function()
-            tween(inputStroke, { Color = C.border }, 0.3)
-            if StatusMsg and StatusMsg.Parent then
-                tween(StatusMsg, { TextTransparency = 1 }, 0.4)
-                task.wait(0.4)
-                if StatusMsg and StatusMsg.Parent then StatusMsg.Text = ""; StatusMsg.TextTransparency = 0 end
-            end
-        end)
-        VerifyLabel.Text = "Verify & Launch  →"
-        tween(VerifyBtn, { BackgroundColor3 = C.accent }, 0.2)
-        verifying = false
-    end
+        end 
 end
 
 VerifyBtn.MouseButton1Click:Connect(doVerify)
